@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "NewsAggregator"
 include(":app")
- 
+include(":navigation")
+include(":feature")
+include(":feature:rss")
+include(":common")
