@@ -1,14 +1,13 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    id("kotlin-kapt")
 }
 
 android {
-    namespace = "com.lapoushko.main"
+    namespace = "com.lapoushko.di"
     compileSdk = 35
 
     defaultConfig {
@@ -34,24 +33,18 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(project(":domain"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-
-    implementation(project(":feature"))
-    implementation(project(":common"))
-    implementation(project(":domain"))
-    implementation(project(":di"))
+    androidTestImplementation(libs.androidx.espresso.core)
 
     // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
 }
