@@ -55,13 +55,14 @@ fun NewsScreen(
     ) {
         SearchBarRss()
         TagCloud(tags = state.tags, selectedTags = emptySet(), onTagSelected = {})
+        SortButton(onSort = { viewModel.sort() })
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
             items(state.initialNews) { rss ->
                 CardNews(
-                    rss,
+                    rss = rss.copy(publishDate = rss.publishDate.toDate().toCustomString()),
                     onToDetail = {}
                 )
             }
@@ -70,7 +71,28 @@ fun NewsScreen(
 }
 
 @Composable
-fun CardNews(
+private fun SortButton(onSort: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.clickable { onSort() }) {
+            Text(
+                text = "По дате добавления",
+                style = Typography.labelLarge,
+                color = Green
+            )
+            Icon(
+                painter = painterResource(com.lapoushko.common.R.drawable.sort),
+                contentDescription = null,
+                tint = Green
+            )
+        }
+
+    }
+}
+
+@Composable
+private fun CardNews(
     rss: RssItem,
     onToDetail: () -> Unit,
 ) {
