@@ -14,7 +14,7 @@ data class RssItem(
     val link: String,
     val description: String,
     val image: String,
-    val author: String,
-    val publishDate: String,
+    val creator: String,
+    val pubDate: String,
     val categories: List<String>
 ): Parcelable

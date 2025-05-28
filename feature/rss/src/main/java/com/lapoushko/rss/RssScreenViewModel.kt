@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.lapoushko.domain.usecase.SubscribeUseCaseGetCategories
+import com.lapoushko.domain.usecase.SubscribeUseCaseGetRss
 import com.lapoushko.feature.model.RssItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
@@ -15,7 +17,10 @@ import javax.inject.Inject
  * @author Lapoushko
  */
 @HiltViewModel
-class RssScreenViewModel @Inject constructor() : ViewModel() {
+class RssScreenViewModel @Inject constructor(
+    private val useCaseCategory: SubscribeUseCaseGetCategories,
+    private val useCaseRss: SubscribeUseCaseGetRss
+) : ViewModel() {
     private var _state = MutableRssScreenState()
     val state = _state as RssScreenState
 
@@ -23,13 +28,13 @@ class RssScreenViewModel @Inject constructor() : ViewModel() {
         if (state.isSortedByDescending){
             _state.news = _state.news.sortedByDescending {
                 _state.isSortedByDescending = false
-                it.publishDate.toDate()
+                it.pubDate.toDate()
             }
         }
         else{
             _state.news = _state.news.sortedBy {
                 _state.isSortedByDescending = true
-                it.publishDate.toDate()
+                it.pubDate.toDate()
             }
         }
     }
@@ -42,8 +47,8 @@ class RssScreenViewModel @Inject constructor() : ViewModel() {
                     link = "ссылка",
                     description = "описание",
                     image = "изображение",
-                    author = "автор",
-                    publishDate = "дата публикации",
+                    creator = "автор",
+                    pubDate = "дата публикации",
                     categories = listOf("а", "б")
                 )
             )

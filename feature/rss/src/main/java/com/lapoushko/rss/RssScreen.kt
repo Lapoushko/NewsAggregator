@@ -62,7 +62,7 @@ fun NewsScreen(
         ) {
             items(state.initialNews) { rss ->
                 CardNews(
-                    rss = rss.copy(publishDate = rss.publishDate.toDate().toCustomString()),
+                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
                     onToDetail = {}
                 )
             }
@@ -143,7 +143,7 @@ private fun ImageCard(
                 }
             )
             ChipBlurContent(content = {
-                Text(text = rss.publishDate, style = Typography.bodySmall, color = White)
+                Text(text = rss.pubDate, style = Typography.bodySmall, color = White)
             }
             )
         }
@@ -223,8 +223,8 @@ private fun CourseItemCardPreview() {
             link = "ссылка",
             description = "описание",
             image = "изображение",
-            author = "автор",
-            publishDate = "дата публикации",
+            creator = "автор",
+            pubDate = "дата публикации",
             categories = listOf("а", "б")
         ),
         onToDetail = {},

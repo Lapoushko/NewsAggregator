@@ -41,11 +41,14 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
 
     implementation(project(":feature"))
     implementation(project(":common"))
+    implementation(project(":domain"))
+    implementation(project(":di"))
 
     // hilt
     implementation(libs.hilt.android)
