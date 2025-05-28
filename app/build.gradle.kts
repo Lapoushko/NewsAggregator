@@ -7,7 +7,7 @@ plugins {
     id("androidx.room")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.androidx.navigation.safeargs)
+
 }
 
 android {
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.newsaggregator"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(project(":common"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,6 +66,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(project(":navigation"))
 
     // xml
     implementation(libs.xmlutil.core)
@@ -73,9 +75,6 @@ dependencies {
     // retrofit
     implementation(libs.retrofit2)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
-
-    // coil
-    implementation(libs.coil)
 
     // room
     implementation(libs.androidx.room.runtime)
@@ -87,14 +86,13 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    // navigation
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-
     // coroutine
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
     // recycler
     implementation(libs.androidx.recyclerview)
+
+    //navigation
+    implementation(libs.androidx.navigation.compose.android)
 }

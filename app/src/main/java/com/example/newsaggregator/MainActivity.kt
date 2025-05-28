@@ -1,4 +1,4 @@
-package com.example.newsaggregator.ui
+package com.example.newsaggregator
 
 import android.os.Bundle
 import android.util.Log
@@ -15,23 +15,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.newsaggregator.data.rss.RssFeed
-import com.example.newsaggregator.ui.theme.NewsAggregatorTheme
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.lapoushko.common.theme.NewsAggregatorTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import nl.adaptivity.xmlutil.serialization.XML
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 
 private val retrofit = Retrofit.Builder()
     .baseUrl("https://www.theguardian.com")
     .addConverterFactory(
         XML.asConverterFactory(
-            MediaType.get("application/xml; charset=UTF8")
+            "application/xml; charset=UTF8".toMediaType()
         )
     ).build()
 
 private val guardian = retrofit.create(RssFeed::class.java)
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,11 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NewsAggregatorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        text = "Press me!",
-                        modifier = Modifier.padding(innerPadding),
-                        guardian,
-                    )
+                    App().Host(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
