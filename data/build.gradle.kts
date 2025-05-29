@@ -3,12 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    id("kotlin-kapt")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.lapoushko.di"
+    namespace = "com.lapoushko.data"
     compileSdk = 35
 
     defaultConfig {
@@ -37,32 +35,22 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(project(":data"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     implementation(project(":domain"))
     implementation(project(":data:network"))
-    implementation(project(":feature"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-//    implementation(project(":navigation"))
 
     // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
     // coroutine
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.android)
 
-    // retrofit
-    implementation(libs.retrofit2)
-    implementation(libs.retrofit2.kotlinx.serialization.converter)
-
-    // xml
-    implementation(libs.xmlutil.core)
-    implementation(libs.xmlutil.serialization)
 }

@@ -1,14 +1,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+    id("kotlin-kapt")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    id("kotlin-kapt")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.lapoushko.di"
+    namespace = "com.lapoushko.network"
     compileSdk = 35
 
     defaultConfig {
@@ -37,18 +37,13 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(project(":data"))
-    implementation(project(":domain"))
-    implementation(project(":data:network"))
-    implementation(project(":feature"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-//    implementation(project(":navigation"))
 
     // hilt
     implementation(libs.hilt.android)
