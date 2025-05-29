@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -17,6 +18,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,17 +30,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.lapoushko.common.component.SearchBarRss
 import com.lapoushko.common.component.TagCloud
 import com.lapoushko.common.theme.DarkGray
-import com.lapoushko.common.theme.PlaceholderInputColor
 import com.lapoushko.common.theme.Stroke
 import com.lapoushko.common.theme.Typography
 import com.lapoushko.common.theme.horizontalPadding
 import com.lapoushko.feature.R
-import com.lapoushko.feature.model.RssItem
+import com.lapoushko.feature.model.NewsItem
 
 /**
  * @author Lapoushko
@@ -49,23 +51,42 @@ fun NewsScreen(
     modifier: Modifier = Modifier
 ) {
     val state = viewModel.state
-    Column(
+
+    LaunchedEffect(state.initialNews) {
+        viewModel.setTags()
+    }
+
+    LazyColumn(
+        modifier = modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier.padding(horizontal = 16.dp)
     ) {
-        SearchBarRss()
-        TagCloud(tags = state.tags, selectedTags = emptySet(), onTagSelected = {})
-        SortButton(onSort = { viewModel.sort() })
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            items(state.initialNews) { rss ->
-                CardNews(
-                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
-                    onToDetail = {}
+        item {
+            SearchBarRss()
+        }
+        item {
+            TagCloud(
+                tags = state.tags,
+                selectedTags = state.selectedTags,
+                onTagSelected = { viewModel.updateTag(it) }
+            )
+        }
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                Text(
+                    modifier = Modifier.clickable { viewModel.cleanTags() },
+                    text = "Очистить фильтры",
+                    style = Typography.labelLarge,
+                    color = White
                 )
+                SortButton(onSort = { viewModel.sort() })
             }
+        }
+        items(state.news) { rss ->
+            CardNews(
+                news = rss,
+//                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
+                onToDetail = {}
+            )
         }
     }
 }
@@ -93,7 +114,7 @@ private fun SortButton(onSort: () -> Unit) {
 
 @Composable
 private fun CardNews(
-    rss: RssItem,
+    news: NewsItem,
     onToDetail: () -> Unit,
 ) {
     Card(
@@ -106,16 +127,18 @@ private fun CardNews(
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ImageCard(rss = rss)
-            TextCard(rss = rss)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            ImageCard(news = news)
+            TextCard(news = news)
         }
     }
 }
 
 @Composable
 private fun ImageCard(
-    rss: RssItem,
+    news: NewsItem,
 ) {
     Box {
         AsyncImage(
@@ -123,55 +146,66 @@ private fun ImageCard(
                 .fillMaxWidth()
                 .height(114.dp)
                 .clip(RoundedCornerShape(16.dp)),
-            model = rss.image,
+            model = news.image,
             contentScale = ContentScale.Crop,
             contentDescription = "",
         )
-        Row(
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            ChipBlurContent(
-                content = {
-                    Text(
-                        text = rss.title,
-                        style = Typography.bodySmall,
-                        color = White
-                    )
-                }
-            )
             ChipBlurContent(content = {
-                Text(text = rss.pubDate, style = Typography.bodySmall, color = White)
+                Text(text = news.pubDate, style = Typography.bodySmall, color = White)
             }
             )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(news.categories) { category ->
+                    ChipBlurContent(
+                        content = {
+                            Text(
+                                text = category,
+                                style = Typography.bodySmall,
+                                color = White
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun TextCard(rss: RssItem) {
+private fun TextCard(news: NewsItem) {
     Column(
         modifier = Modifier.padding(horizontal = horizontalPadding),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(text = rss.title, style = Typography.titleMedium)
+        Text(
+            text = news.title,
+            style = Typography.titleSmall,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1
+        )
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(
-                text = rss.description,
-                style = Typography.bodySmall,
-                color = PlaceholderInputColor,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = rss.title, style = Typography.titleMedium, color = White)
+                Text(
+                    text = HtmlCompat.fromHtml(news.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                        .toString(),
+                    style = Typography.titleMedium,
+                    color = White,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
                 Row {
                     Text(
                         text = "Подробнее ",
@@ -216,11 +250,11 @@ private fun ChipBlurContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun CourseItemCardPreview() {
+private fun RssItemCardPreview() {
     CardNews(
-        rss = RssItem(
+        news = NewsItem(
             title = "Тайтл",
-            link = "ссылка",
+            guid = "ссылка",
             description = "описание",
             image = "изображение",
             creator = "автор",
