@@ -65,21 +65,24 @@ class RssScreenViewModel @Inject constructor(
                 newsItem.categories.intersect(state.selectedTags).isNotEmpty()
             }
         }
+        sort(state.sortState)
     }
 
-    fun sort(){
-        if (state.isSortedByDescending){
-            _state.news = _state.news.sortedByDescending {
-                _state.isSortedByDescending = false
-                it.date
+    fun sort(newSortState: RssScreenState.SortState = RssScreenState.SortState.NONE){
+        when(newSortState){
+            RssScreenState.SortState.DESCENDING -> {
+                _state.news = _state.news.sortedByDescending {
+                    it.date
+                }
             }
-        }
-        else{
-            _state.news = _state.news.sortedBy {
-                _state.isSortedByDescending = true
-                it.date
+            RssScreenState.SortState.ASCENDING -> {
+                _state.news = _state.news.sortedBy {
+                    it.date
+                }
             }
+            RssScreenState.SortState.NONE -> _state.news = state.initialNews
         }
+        _state.sortState = newSortState
     }
 
     private class MutableRssScreenState : RssScreenState {
@@ -88,7 +91,7 @@ class RssScreenViewModel @Inject constructor(
         override var news: List<NewsItem> by mutableStateOf(emptyList())
         override var tags: Set<String> by mutableStateOf(setOf("a","b","c","d","e","f","g","h"))
         override var selectedTags: Set<String> by mutableStateOf(mutableSetOf())
-        override var isSortedByDescending: Boolean by mutableStateOf(false)
+        override var sortState: RssScreenState.SortState by mutableStateOf(RssScreenState.SortState.NONE)
     }
 }
 
@@ -100,5 +103,11 @@ interface RssScreenState {
     val tags: Set<String>
     val selectedTags: Set<String>
 
-    val isSortedByDescending: Boolean
+    val sortState: SortState
+
+    enum class SortState{
+        NONE,
+        ASCENDING,
+        DESCENDING
+    }
 }

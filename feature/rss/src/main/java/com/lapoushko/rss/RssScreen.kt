@@ -72,21 +72,33 @@ fun NewsScreen(
             )
         }
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
                     modifier = Modifier.clickable { viewModel.cleanTags() },
                     text = "Очистить фильтры",
                     style = Typography.labelLarge,
                     color = White
                 )
-                SortButton(onSort = { viewModel.sort() })
+                SortButton(
+                    onSort = {
+                        viewModel.sort(
+                            when(state.sortState){
+                                RssScreenState.SortState.NONE -> RssScreenState.SortState.ASCENDING
+                                RssScreenState.SortState.ASCENDING -> RssScreenState.SortState.DESCENDING
+                                RssScreenState.SortState.DESCENDING -> RssScreenState.SortState.ASCENDING
+                            }
+                        )
+                    }
+                )
             }
         }
         items(state.news) { rss ->
             CardNews(
                 news = rss,
-//                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
-                onToDetail = {onToDetail(it)}
+                onToDetail = { onToDetail(it) }
             )
         }
     }
