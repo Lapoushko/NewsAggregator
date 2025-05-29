@@ -61,7 +61,7 @@ fun NewsScreen(
     onToDetail: (String) -> Unit
 ) {
     val state = viewModel.state
-    var query by rememberSaveable { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf(state.query) }
 
     when(state.statusLoading){
         RssScreenState.StatusLoading.LOADING -> {
