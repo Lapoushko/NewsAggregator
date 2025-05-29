@@ -48,7 +48,8 @@ import com.lapoushko.feature.model.NewsItem
 @Composable
 fun NewsScreen(
     viewModel: RssScreenViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToDetail: (String) -> Unit
 ) {
     val state = viewModel.state
 
@@ -85,7 +86,7 @@ fun NewsScreen(
             CardNews(
                 news = rss,
 //                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
-                onToDetail = {}
+                onToDetail = {onToDetail(it)}
             )
         }
     }
@@ -115,13 +116,13 @@ private fun SortButton(onSort: () -> Unit) {
 @Composable
 private fun CardNews(
     news: NewsItem,
-    onToDetail: () -> Unit,
+    onToDetail: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(236.dp)
-            .clickable { onToDetail() },
+            .clickable { onToDetail(news.guid) },
         colors = CardDefaults.cardColors(
             containerColor = DarkGray
         ),
@@ -268,5 +269,7 @@ private fun RssItemCardPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun NewsScreenPreview() {
-    NewsScreen()
+    NewsScreen(
+        onToDetail = {}
+    )
 }
