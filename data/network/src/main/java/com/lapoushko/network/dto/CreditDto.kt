@@ -1,14 +1,13 @@
-package com.example.newsaggregator.data.rss.dto
+package com.lapoushko.network.dto
 
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 
 @Serializable
-@XmlSerialName("category")
-data class CategoryDto(
-
-    val domain: String,
+@XmlSerialName("credit", "http://search.yahoo.com/mrss/", "media")
+data class CreditDto (
+    val scheme: String?,
 
     @XmlValue
     val value: String
