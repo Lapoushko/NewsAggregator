@@ -1,7 +1,7 @@
 package com.lapoushko.di
 
+import com.lapoushko.data.RssRepositoryImpl
 import com.lapoushko.domain.repo.RssRepository
-import com.lapoushko.domain.repo.RssRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
