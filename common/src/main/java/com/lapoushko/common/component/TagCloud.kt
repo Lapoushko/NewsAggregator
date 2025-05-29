@@ -1,16 +1,18 @@
 package com.lapoushko.common.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lapoushko.common.theme.DarkGray
-import com.lapoushko.common.theme.Stroke
-import com.lapoushko.common.theme.Typography
 
 /**
  * @author Lapoushko
@@ -25,16 +27,35 @@ fun TagCloud(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(tags.toList()) { tag ->
-            val isSelected = selectedTags.contains(tag)
-            FilterChip(
-                onClick = { onTagSelected(tag) },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = DarkGray,
-                    labelColor = Stroke
-                ),
-                selected = isSelected,
-                label = { Text(text = tag, style = Typography.bodySmall) }
+            Chip(
+                tag = tag,
+                selected = selectedTags.contains(tag),
+                onTagSelected = { onTagSelected(it) }
             )
         }
     }
+}
+
+@Composable
+fun Chip(
+    tag: String,
+    selected: Boolean,
+    onTagSelected: (String) -> Unit
+) {
+    FilterChip(
+        onClick = { onTagSelected(tag) },
+        label = { Text(tag) },
+        selected = selected,
+        leadingIcon = if (selected) {
+            {
+                Icon(
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                )
+            }
+        } else {
+            null
+        }
+    )
 }
