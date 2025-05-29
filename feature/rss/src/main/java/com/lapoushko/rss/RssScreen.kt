@@ -23,6 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +61,7 @@ fun NewsScreen(
     onToDetail: (String) -> Unit
 ) {
     val state = viewModel.state
+    var query by rememberSaveable { mutableStateOf("") }
 
     when(state.statusLoading){
         RssScreenState.StatusLoading.LOADING -> {
@@ -91,7 +96,12 @@ fun NewsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     item {
-                        SearchBarRss()
+                        SearchBarRss(
+                            queryReturn = { query = it },
+                            onClick = {
+                                viewModel.searchByName(query)
+                            }
+                        )
                     }
                     item {
                         TagCloud(
