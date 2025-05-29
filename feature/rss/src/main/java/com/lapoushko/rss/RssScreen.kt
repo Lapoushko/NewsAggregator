@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,8 +16,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -45,6 +49,7 @@ import com.lapoushko.feature.model.NewsItem
 /**
  * @author Lapoushko
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsScreen(
     viewModel: RssScreenViewModel = hiltViewModel(),
@@ -53,53 +58,80 @@ fun NewsScreen(
 ) {
     val state = viewModel.state
 
-    LaunchedEffect(state.initialNews) {
-        viewModel.setTags()
-    }
-
-    LazyColumn(
-        modifier = modifier.padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            SearchBarRss()
-        }
-        item {
-            TagCloud(
-                tags = state.tags,
-                selectedTags = state.selectedTags,
-                onTagSelected = { viewModel.updateTag(it) }
-            )
-        }
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+    when(state.statusLoading){
+        RssScreenState.StatusLoading.LOADING -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                CircularProgressIndicator(color = Green)
                 Text(
-                    modifier = Modifier.clickable { viewModel.cleanTags() },
-                    text = "Очистить фильтры",
+                    modifier = Modifier.clickable { viewModel.loadRss() },
+                    text = "Попробовать снова",
                     style = Typography.labelLarge,
                     color = White
                 )
-                SortButton(
-                    onSort = {
-                        viewModel.sort(
-                            when(state.sortState){
-                                RssScreenState.SortState.NONE -> RssScreenState.SortState.ASCENDING
-                                RssScreenState.SortState.ASCENDING -> RssScreenState.SortState.DESCENDING
-                                RssScreenState.SortState.DESCENDING -> RssScreenState.SortState.ASCENDING
-                            }
-                        )
-                    }
-                )
             }
         }
-        items(state.news) { rss ->
-            CardNews(
-                news = rss,
-                onToDetail = { onToDetail(it) }
-            )
+        RssScreenState.StatusLoading.SUCCESS -> {
+            PullToRefreshBox(
+                onRefresh = {
+                    viewModel.updateStatusLoading(RssScreenState.StatusLoading.LOADING)
+                    viewModel.loadRss()
+                },
+                isRefreshing = state.statusLoading == RssScreenState.StatusLoading.LOADING
+            ){
+                LaunchedEffect(state.initialNews) {
+                    viewModel.setTags()
+                }
+                LazyColumn(
+                    modifier = modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    item {
+                        SearchBarRss()
+                    }
+                    item {
+                        TagCloud(
+                            tags = state.tags,
+                            selectedTags = state.selectedTags,
+                            onTagSelected = { viewModel.updateTag(it) }
+                        )
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                modifier = Modifier.clickable { viewModel.cleanTags() },
+                                text = "Очистить фильтры",
+                                style = Typography.labelLarge,
+                                color = White
+                            )
+                            SortButton(
+                                onSort = {
+                                    viewModel.sort(
+                                        when(state.sortState){
+                                            RssScreenState.SortState.NONE -> RssScreenState.SortState.ASCENDING
+                                            RssScreenState.SortState.ASCENDING -> RssScreenState.SortState.DESCENDING
+                                            RssScreenState.SortState.DESCENDING -> RssScreenState.SortState.ASCENDING
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    items(state.news) { rss ->
+                        CardNews(
+                            news = rss,
+                            onToDetail = { onToDetail(it) }
+                        )
+                    }
+                }
+            }
         }
     }
 }

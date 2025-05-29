@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lapoushko.domain.entity.Channel
 import com.lapoushko.domain.usecase.SubscribeUseCaseGetChannel
 import com.lapoushko.feature.mapper.RssItemMapper
 import com.lapoushko.feature.model.ChannelItem
@@ -29,11 +30,14 @@ class RssScreenViewModel @Inject constructor(
         setTags()
     }
 
-    private fun loadRss(){
+    fun loadRss(){
         viewModelScope.launch {
-            _state.channel = mapper.toItemChannel(useCaseRss.getChannel())
-            _state.initialNews = state.channel.news
-            _state.news = state.initialNews
+            useCaseRss.getChannel()?.let { channel: Channel ->
+                _state.channel = mapper.toItemChannel(channel)
+                _state.initialNews = state.channel!!.news
+                _state.news = state.initialNews
+                _state.statusLoading = RssScreenState.StatusLoading.SUCCESS
+            }
         }
     }
 
@@ -85,18 +89,23 @@ class RssScreenViewModel @Inject constructor(
         _state.sortState = newSortState
     }
 
+    fun updateStatusLoading(statusLoading: RssScreenState.StatusLoading){
+        _state.statusLoading = statusLoading
+    }
+
     private class MutableRssScreenState : RssScreenState {
-        override var channel: ChannelItem by mutableStateOf(ChannelItem())
+        override var channel: ChannelItem? by mutableStateOf(null)
         override var initialNews: List<NewsItem> by mutableStateOf(emptyList())
         override var news: List<NewsItem> by mutableStateOf(emptyList())
         override var tags: Set<String> by mutableStateOf(setOf("a","b","c","d","e","f","g","h"))
         override var selectedTags: Set<String> by mutableStateOf(mutableSetOf())
         override var sortState: RssScreenState.SortState by mutableStateOf(RssScreenState.SortState.NONE)
+        override var statusLoading: RssScreenState.StatusLoading by mutableStateOf(RssScreenState.StatusLoading.LOADING)
     }
 }
 
 interface RssScreenState {
-    val channel: ChannelItem
+    val channel: ChannelItem?
     val initialNews: List<NewsItem>
     val news: List<NewsItem>
 
@@ -105,9 +114,16 @@ interface RssScreenState {
 
     val sortState: SortState
 
+    val statusLoading: StatusLoading
+
     enum class SortState{
         NONE,
         ASCENDING,
         DESCENDING
+    }
+
+    enum class StatusLoading{
+        LOADING,
+        SUCCESS
     }
 }
