@@ -1,8 +1,6 @@
 package com.lapoushko.di
 
 import com.lapoushko.domain.repo.RssRepository
-import com.lapoushko.domain.usecase.SubscribeUseCaseGetCategories
-import com.lapoushko.domain.usecase.SubscribeUseCaseGetCategoriesImpl
 import com.lapoushko.domain.usecase.SubscribeUseCaseGetChannel
 import com.lapoushko.domain.usecase.SubscribeUseCaseGetChannelImpl
 import dagger.Module
@@ -22,11 +20,5 @@ object UseCaseModule {
     @Provides
     fun provideSubscribeUseCaseGetRss(repository: RssRepository): SubscribeUseCaseGetChannel {
         return SubscribeUseCaseGetChannelImpl(repository)
-    }
-
-    @Singleton
-    @Provides
-    fun provideSubscribeUseCaseGetCategories(repository: RssRepository): SubscribeUseCaseGetCategories {
-        return SubscribeUseCaseGetCategoriesImpl(repository)
     }
 }

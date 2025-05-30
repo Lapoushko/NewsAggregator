@@ -1,11 +1,15 @@
 package com.lapoushko.rss
 
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,10 +19,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
@@ -45,48 +56,94 @@ import com.lapoushko.feature.model.NewsItem
 /**
  * @author Lapoushko
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsScreen(
     viewModel: RssScreenViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToDetail: (String) -> Unit
 ) {
     val state = viewModel.state
+    var query by rememberSaveable { mutableStateOf(state.query) }
 
-    LaunchedEffect(state.initialNews) {
-        viewModel.setTags()
-    }
-
-    LazyColumn(
-        modifier = modifier.padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            SearchBarRss()
-        }
-        item {
-            TagCloud(
-                tags = state.tags,
-                selectedTags = state.selectedTags,
-                onTagSelected = { viewModel.updateTag(it) }
-            )
-        }
-        item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+    when (state.statusLoading) {
+        RssScreenState.StatusLoading.LOADING -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(color = Green)
                 Text(
-                    modifier = Modifier.clickable { viewModel.cleanTags() },
-                    text = "Очистить фильтры",
+                    modifier = Modifier.clickable { viewModel.loadRss() },
+                    text = "Попробовать снова",
                     style = Typography.labelLarge,
                     color = White
                 )
-                SortButton(onSort = { viewModel.sort() })
             }
         }
-        items(state.news) { rss ->
-            CardNews(
-                news = rss,
-//                    rss = rss.copy(pubDate = rss.pubDate.toDate().toCustomString()),
-                onToDetail = {}
-            )
+
+        RssScreenState.StatusLoading.SUCCESS -> {
+            PullToRefreshBox(
+                onRefresh = {
+                    viewModel.updateStatusLoading(RssScreenState.StatusLoading.LOADING)
+                    viewModel.loadRss()
+                },
+                isRefreshing = state.statusLoading == RssScreenState.StatusLoading.LOADING
+            ) {
+                LazyColumn(
+                    modifier = modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    item {
+                        SearchBarRss(
+                            text = state.query,
+                            onClick = {
+                                viewModel.searchByName(state.query)
+                            },
+                            updateQuery = { viewModel.updateQuery(it) }
+                        )
+                    }
+                    item {
+                        TagCloud(
+                            tags = state.tags,
+                            selectedTags = state.selectedTags,
+                            onTagSelected = { viewModel.updateTag(it) }
+                        )
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                modifier = Modifier.clickable { viewModel.cleanTags() },
+                                text = "Очистить фильтры",
+                                style = Typography.labelLarge,
+                                color = White
+                            )
+                            SortButton(
+                                onSort = {
+                                    viewModel.sort(
+                                        when (state.sortState) {
+                                            RssScreenState.SortState.NONE -> RssScreenState.SortState.ASCENDING
+                                            RssScreenState.SortState.ASCENDING -> RssScreenState.SortState.DESCENDING
+                                            RssScreenState.SortState.DESCENDING -> RssScreenState.SortState.ASCENDING
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    items(state.news) { rss ->
+                        CardNews(
+                            news = rss,
+                            onToDetail = { onToDetail(it) }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -115,13 +172,13 @@ private fun SortButton(onSort: () -> Unit) {
 @Composable
 private fun CardNews(
     news: NewsItem,
-    onToDetail: () -> Unit,
+    onToDetail: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(236.dp)
-            .clickable { onToDetail() },
+            .clickable { onToDetail(news.guid) },
         colors = CardDefaults.cardColors(
             containerColor = DarkGray
         ),
@@ -248,6 +305,22 @@ private fun ChipBlurContent(
     }
 }
 
+@Composable
+fun DetailScreen(guid: String) {
+    AndroidView(factory = {
+        WebView(it).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            webViewClient = WebViewClient()
+            loadUrl(guid)
+        }
+    }, update = {
+        it.loadUrl(guid)
+    })
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun RssItemCardPreview() {
@@ -268,5 +341,7 @@ private fun RssItemCardPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun NewsScreenPreview() {
-    NewsScreen()
+    NewsScreen(
+        onToDetail = {}
+    )
 }

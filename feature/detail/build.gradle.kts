@@ -2,12 +2,10 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.androidx.navigation.safeargs)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.lapoushko.navigation"
+    namespace = "com.lapoushko.detail"
     compileSdk = 35
 
     defaultConfig {
@@ -39,23 +37,10 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.runtime.android)
-    implementation(project(":feature:rss"))
-    implementation(project(":feature:detail"))
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+
     implementation(project(":feature"))
-
-    // navigation
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.compose.android)
-    implementation(libs.androidx.navigation.ui.ktx)
-
-    //Serialization
-    implementation(libs.kotlinx.serialization.json.jvm)
 }

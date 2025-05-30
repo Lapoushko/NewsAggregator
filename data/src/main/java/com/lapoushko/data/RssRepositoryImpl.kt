@@ -13,11 +13,11 @@ class RssRepositoryImpl @Inject constructor(
     private val rssFeed: RssFeed,
     private val mapper: RssDtoMapper
 ): RssRepository {
-    override suspend fun getChannel(): Channel {
-        return mapper.toDomainChannel(rssFeed.getRss())
-    }
-
-    override suspend fun getCategories(): String {
-        return ""//TODO
+    override suspend fun getChannel(): Channel? {
+        return try {
+            mapper.toDomainChannel(rssFeed.getRss())
+        } catch (e: Exception){
+            null
+        }
     }
 }

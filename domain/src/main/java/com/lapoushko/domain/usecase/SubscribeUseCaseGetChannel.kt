@@ -8,13 +8,13 @@ import javax.inject.Inject
  * @author Lapoushko
  */
 interface SubscribeUseCaseGetChannel {
-    suspend fun getChannel(): Channel
+    suspend fun getChannel(): Channel?
 }
 
 class SubscribeUseCaseGetChannelImpl @Inject constructor(
     private val repository: RssRepository
 ): SubscribeUseCaseGetChannel{
-    override suspend fun getChannel(): Channel {
+    override suspend fun getChannel(): Channel? {
         return repository.getChannel()
     }
 }

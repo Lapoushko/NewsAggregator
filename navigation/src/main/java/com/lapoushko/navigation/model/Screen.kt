@@ -11,5 +11,5 @@ sealed class Screen {
     data object News: Screen()
 
     @Serializable
-    data object Detail: Screen()
+    data class Detail(val guid: String): Screen()
 }
