@@ -1,5 +1,8 @@
 package com.lapoushko.rss
 
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
@@ -63,7 +66,7 @@ fun NewsScreen(
     val state = viewModel.state
     var query by rememberSaveable { mutableStateOf(state.query) }
 
-    when(state.statusLoading){
+    when (state.statusLoading) {
         RssScreenState.StatusLoading.LOADING -> {
             Column(
                 modifier = Modifier
@@ -80,6 +83,7 @@ fun NewsScreen(
                 )
             }
         }
+
         RssScreenState.StatusLoading.SUCCESS -> {
             PullToRefreshBox(
                 onRefresh = {
@@ -87,20 +91,18 @@ fun NewsScreen(
                     viewModel.loadRss()
                 },
                 isRefreshing = state.statusLoading == RssScreenState.StatusLoading.LOADING
-            ){
-                LaunchedEffect(state.initialNews) {
-                    viewModel.setTags()
-                }
+            ) {
                 LazyColumn(
                     modifier = modifier.padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     item {
                         SearchBarRss(
-                            queryReturn = { query = it },
+                            text = state.query,
                             onClick = {
-                                viewModel.searchByName(query)
-                            }
+                                viewModel.searchByName(state.query)
+                            },
+                            updateQuery = { viewModel.updateQuery(it) }
                         )
                     }
                     item {
@@ -124,7 +126,7 @@ fun NewsScreen(
                             SortButton(
                                 onSort = {
                                     viewModel.sort(
-                                        when(state.sortState){
+                                        when (state.sortState) {
                                             RssScreenState.SortState.NONE -> RssScreenState.SortState.ASCENDING
                                             RssScreenState.SortState.ASCENDING -> RssScreenState.SortState.DESCENDING
                                             RssScreenState.SortState.DESCENDING -> RssScreenState.SortState.ASCENDING
@@ -301,6 +303,22 @@ private fun ChipBlurContent(
             content()
         }
     }
+}
+
+@Composable
+fun DetailScreen(guid: String) {
+    AndroidView(factory = {
+        WebView(it).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            webViewClient = WebViewClient()
+            loadUrl(guid)
+        }
+    }, update = {
+        it.loadUrl(guid)
+    })
 }
 
 @Preview(showBackground = true)

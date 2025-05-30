@@ -14,10 +14,8 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -32,17 +30,12 @@ import com.lapoushko.common.theme.Typography
 @Composable
 fun SearchBarRss(
     placeholder: String = "Поиск новостей",
-    text: String? = null,
+    text: String,
+    updateQuery: (String) -> Unit,
     onClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
-    queryReturn: (String) -> Unit = {}
 ) {
-    var query by remember { mutableStateOf(text ?: "") }
     var isActive by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(query) {
-        queryReturn(query)
-    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -53,12 +46,12 @@ fun SearchBarRss(
             shape = RoundedCornerShape(18.dp),
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = query,
+                    query = text,
                     onQueryChange = {
-                        query = it
+                        updateQuery(it)
                     },
                     onSearch = {
-                        onClick(query)
+                        onClick(text)
                         isActive = false
                     },
                     expanded = isActive,
@@ -73,9 +66,9 @@ fun SearchBarRss(
                             CustomIconButton(
                                 imageVector = Icons.Outlined.Close,
                                 onClick = {
-                                    query = ""
+                                    updateQuery("")
                                     isActive = false
-                                    onClick(query)
+                                    onClick(text)
                                 }
                             )
                         }
@@ -84,7 +77,7 @@ fun SearchBarRss(
                     trailingIcon = {
                         CustomIconButton(
                             imageVector = Icons.Filled.Search,
-                            onClick = { onClick(query) }
+                            onClick = { onClick(text) }
                         )
                     },
                 )

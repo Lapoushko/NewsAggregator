@@ -27,7 +27,6 @@ class RssScreenViewModel @Inject constructor(
 
     init {
         loadRss()
-        setTags()
     }
 
     fun loadRss() {
@@ -37,11 +36,12 @@ class RssScreenViewModel @Inject constructor(
                 _state.initialNews = state.channel!!.news
                 _state.news = state.initialNews
                 _state.statusLoading = RssScreenState.StatusLoading.SUCCESS
+                setTags()
             }
         }
     }
 
-    fun setTags() {
+    private fun setTags() {
         _state.tags = state.news.flatMap { it.categories }.toSet()
     }
 
@@ -98,6 +98,10 @@ class RssScreenViewModel @Inject constructor(
         _state.statusLoading = statusLoading
     }
 
+    fun updateQuery(query: String){
+        _state.query = query
+    }
+
     fun searchByName(query: String) {
         _state.query = query
         updateNews()
@@ -126,7 +130,6 @@ interface RssScreenState {
     val query: String
 
     val sortState: SortState
-
     val statusLoading: StatusLoading
 
     enum class SortState {
